@@ -13,6 +13,10 @@ class NADE(nn.Module):
         self.V = nn.Parameter(torch.rand(D, H))
         self.b = nn.Parameter(torch.rand(D))
 
+        # it is really important to initialize when it comes to make linear layer yourself.
+        nn.init.kaiming_normal_(self.W)
+        nn.init.kaiming_normal_(self.V)
+
     def forward(self, x):
         shape = x.shape
         x = x.reshape(shape[0], -1)
