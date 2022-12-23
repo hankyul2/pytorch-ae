@@ -12,6 +12,7 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 1. [Tutorial](#tutorial)
 2. [Experiment result](#experiment-result)
+2. [Generated Image](#generated-image)
 3. [Reference](#reference)
 
 
@@ -36,19 +37,37 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
-|                     | Binarized MNIST | Pretrained model                                   |
-| ------------------- | --------------- | -------------------------------------------------- |
-| NADE[^1]            | 86.1            | [[code](pae/model/nade.py)] [[weight]()] [[log]()] |
-| PixelRNN[^2]        |                 |                                                    |
-| PixelCNN[^3]        |                 |                                                    |
-| PixelSnail[^4]      |                 |                                                    |
-| AE[^5]              |                 |                                                    |
-| VAE[^6]             |                 |                                                    |
-| Categorical-VAE[^7] |                 |                                                    |
-| VQ-VAE[^8]          |                 |                                                    |
-| VQ-VAE-v2[^9]       |                 |                                                    |
-| dVAE[^10]           |                 |                                                    |
-| CDM[^11]            |                 |                                                    |
+| Method              | Command                    | Binarized MNIST | Pretrained model                                   |
+| ------------------- | -------------------------- | --------------- | -------------------------------------------------- |
+| NADE[^1]            | `python3 train.py -m nade` | 86.1            | [[code](pae/model/nade.py)] [[weight]()] [[log]()] |
+| PixelRNN[^2]        |                            |                 |                                                    |
+| PixelCNN[^3]        |                            |                 |                                                    |
+| PixelSnail[^4]      |                            |                 |                                                    |
+| AE[^5]              |                            |                 |                                                    |
+| VAE[^6]             |                            |                 |                                                    |
+| Categorical-VAE[^7] |                            |                 |                                                    |
+| VQ-VAE[^8]          |                            |                 |                                                    |
+| VQ-VAE-v2[^9]       |                            |                 |                                                    |
+| dVAE[^10]           |                            |                 |                                                    |
+| CDM[^11]            |                            |                 |                                                    |
+
+
+
+## :framed_picture:Generated Image
+
+| Method              | 25 Epoch                                                     | 50 Epoch                                                     |
+| ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| NADE[^1]            | ![val_25](https://user-images.githubusercontent.com/31476895/209291712-430abc71-3b6e-4963-81b2-df7b062ebfa0.jpg) | ![hi](https://user-images.githubusercontent.com/31476895/209291150-95a55130-4624-4004-8ddc-6d5b57ed7e92.jpg) |
+| PixelRNN[^2]        |                                                              |                                                              |
+| PixelCNN[^3]        |                                                              |                                                              |
+| PixelSnail[^4]      |                                                              |                                                              |
+| AE[^5]              |                                                              |                                                              |
+| VAE[^6]             |                                                              |                                                              |
+| Categorical-VAE[^7] |                                                              |                                                              |
+| VQ-VAE[^8]          |                                                              |                                                              |
+| VQ-VAE-v2[^9]       |                                                              |                                                              |
+| dVAE[^10]           |                                                              |                                                              |
+| CDM[^11]            |                                                              |                                                              |
 
 
 
