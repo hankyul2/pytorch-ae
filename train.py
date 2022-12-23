@@ -7,14 +7,13 @@ from tqdm import tqdm
 
 import torch
 import torchvision.transforms as TVT
-from torch.nn import BCELoss
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 
 from pae.dataset import _dynamically_binarize
 from pae.model import NADE
-from pae.util import Metric
+from pae.util import Metric, BNLLLoss
 
 
 def get_arg_parser():
@@ -101,7 +100,7 @@ def run(args):
         AssertionError(f"{args.model_name} is not supported yet!")
 
     optim = AdamW(f.parameters(), lr=args.lr, weight_decay=args.wd)
-    critic = BCELoss()
+    critic = BNLLLoss()
 
     for epoch in range(args.epoch):
         train_loss = train(train_dataloader, f, critic, optim, args.device)

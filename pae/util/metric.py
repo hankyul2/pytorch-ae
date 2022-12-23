@@ -1,4 +1,14 @@
 import torch
+from torch.nn import BCELoss
+
+
+class BNLLLoss(BCELoss):
+    def __init__(self):
+        """Binary Negative Log Likelihood (BNLL)"""
+        super().__init__(reduction='sum')
+    def forward(self, x, y):
+        output = super().forward(x, y)
+        return output / len(x)
 
 
 class Metric:
