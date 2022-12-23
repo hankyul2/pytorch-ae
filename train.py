@@ -25,7 +25,7 @@ def get_arg_parser():
     parser.add_argument('--cuda', type=str, default='0,', help="cuda devices")
 
     # 2. model
-    parser.add_argument('--model-name', type=str, default='NADE', help='the name of model')
+    parser.add_argument('-m', '--model-name', type=str, default='NADE', help='the name of model')
 
     # 3. optimizer & learning rate
     parser.add_argument('--batch-size', type=int, default=512, help='the number of batch per step')
