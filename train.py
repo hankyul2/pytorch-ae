@@ -12,6 +12,7 @@ from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
 
+from pae.dataset import _dynamically_binarize
 from pae.model import NADE
 from pae.util import Metric
 
@@ -28,10 +29,10 @@ def get_arg_parser():
     parser.add_argument('--model-name', type=str, default='NADE', help='the name of model')
 
     # 3. optimizer & learning rate
-    parser.add_argument('--batch-size', type=int, default=256, help='the number of batch per step')
+    parser.add_argument('--batch-size', type=int, default=512, help='the number of batch per step')
     parser.add_argument('--epoch', type=int, default=50, help='the number of training epoch')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
-    parser.add_argument('--wd', type=float, default=0, help='weight decay')
+    parser.add_argument('--wd', type=float, default=1e-4, help='weight decay')
 
     return parser
 
@@ -88,7 +89,7 @@ def setup(args):
 def run(args):
     setup(args)
 
-    transform = TVT.Compose([TVT.ToTensor()])
+    transform = TVT.Compose([TVT.ToTensor(), _dynamically_binarize])
     train_dataset = MNIST(args.data_dir, train=True, download=True, transform=transform)
     val_dataset = MNIST(args.data_dir, train=False, download=True, transform=transform)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
