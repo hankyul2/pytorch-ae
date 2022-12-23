@@ -33,15 +33,15 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 ## Experiment Result
 
-|               | Binarized MNIST | Pretrained model                         |
-| ------------- | --------------- | ---------------------------------------- |
-| NADE [[1][1]] |                 | [[code](pae/model/nade.py)] [[weight]()] |
-|               |                 |                                          |
-|               |                 |                                          |
+|          | Binarized MNIST | Pretrained model                         |
+| -------- | --------------- | ---------------------------------------- |
+| NADE[^1] |                 | [[code](pae/model/nade.py)] [[weight]()] |
+|          |                 |                                          |
+|          |                 |                                          |
 
 
 
 ## Reference
 
-[1]: **NADE:** "Neural Autoregressive Distribution Estimation", MLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] [[code](pae/model/nade.py)]
+[^1]: **NADE:** "Neural Autoregressive Distribution Estimation", MLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] [[code](pae/model/nade.py)]
 
