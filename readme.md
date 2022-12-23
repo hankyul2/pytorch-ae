@@ -10,10 +10,10 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 ## Table of contents
 
-1. [Tutorial](#tutorial)
-2. [Experiment result](#experiment-result)
-2. [Generated Image](#generated-image)
-3. [Reference](#reference)
+1. [Tutorial](#seedlingtutorial)
+2. [Experiment result](#four_leaf_cloverexperiment-result)
+2. [Generated Image](#framed_picturegenerated-image)
+3. [Reference](#maple_leafreference)
 
 
 
