@@ -39,9 +39,11 @@ class NADE(nn.Module):
 
         p = torch.concat(p, dim=-1).reshape(*shape)
         x_sample = torch.concat(x_sample, dim=-1).reshape(*shape)
+
         return p, x_sample
 
-    def sample(self, n_sample, device):
-        x = torch.full([n_sample, self.D], -1).to(torch.float).to(device)
+    @torch.no_grad()
+    def sample(self, shape, device):
+        x = torch.full(shape, -1).to(torch.float).to(device)
         p, x_sample = self.forward(x)
         return x_sample

@@ -10,7 +10,7 @@ from torchvision.datasets import MNIST
 from torchvision.utils import save_image
 
 from pae.dataset import _dynamically_binarize
-from pae.model import NADE
+from pae.model import NADE, PixelCNN
 from pae.util import Metric, BNLLLoss, setup, clear
 
 
@@ -82,7 +82,7 @@ def train(dataloader, f, critic, optim, args, epoch):
 
 
 def sample(f, args, epoch):
-    sampled_img = f.sample(16, args.device).reshape(16, 1, 28, 28)
+    sampled_img = f.sample((16, 1, 28, 28), args.device)
     save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
 
 
@@ -97,6 +97,8 @@ def run(args):
 
     if args.model_name == 'NADE':
         f = NADE().to(args.device)
+    elif args.model_name == 'PixelCNN':
+        f = PixelCNN().to(args.device)
     else:
         AssertionError(f"{args.model_name} is not supported yet!")
 
