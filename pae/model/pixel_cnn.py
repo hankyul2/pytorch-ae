@@ -54,6 +54,7 @@ class ResidualBlock(nn.Module):
 class PixelCNN(nn.Module):
     """
     changes: relu(f(x) + x)
+    note: don't use init (e.g. he, xavier)
     """
     def __init__(self, ch=1, category=1, hidden=16, layer=15):
         super().__init__()
@@ -71,12 +72,6 @@ class PixelCNN(nn.Module):
             nn.ReLU(inplace=True),
             MaskConv2d(in_channels=self.h, out_channels=self.c * category, kernel_size=1, channel_split=self.c),
         )
-        self.init_weights()
-
-    def init_weights(self):
-        for n, m in self.named_modules():
-            if isinstance(m, nn.Conv2d):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
 
     def forward(self, x):
         x = self.stem(x)
@@ -108,11 +103,11 @@ class PixelCNN(nn.Module):
         return x
 
 
-# if __name__ == '__main__':
-#     x = torch.rand(2, 3, 28, 28)
-#     f = PixelCNN(ch=3, category=256)
-#     y, sample = f(x)
-#     print(y.shape)
-#     print(sample.shape)
-#     img = f.sample((2, 3, 28, 28), 'cpu')
-#     print(img.shape)
+if __name__ == '__main__':
+    x = torch.rand(2, 3, 28, 28)
+    f = PixelCNN(ch=3, category=256)
+    y, sample = f(x)
+    print(y.shape)
+    print(sample.shape)
+    img = f.sample((2, 3, 28, 28), 'cpu')
+    print(img.shape)
