@@ -106,9 +106,13 @@ def run(args):
     for epoch in range(args.epoch):
         train_loss = train(train_dataloader, f, critic, optim, args.device)
         val_loss = validate(val_dataloader, f, critic, args.device, epoch, args.log_dir)
+        sampled_img = f.sample(16, args.device).reshape(16, 1, 28, 28)
+        save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
+
         if best_loss > val_loss:
             best_loss = val_loss
-            torch.save({k: v.cpu() for k, v in f.state_dict()}, os.path.join(args.log_dir, f'{args.model_name}.pth'))
+            state_dict = {k: v.cpu() for k, v in f.state_dict().items()},
+            torch.save(state_dict, os.path.join(args.log_dir, f'{args.model_name}.pth'))
             print(f"saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
 
 
