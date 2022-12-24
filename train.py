@@ -1,28 +1,31 @@
 import os
 from argparse import ArgumentParser
-from pathlib import Path
-
-from torchvision.utils import save_image
-from tqdm import tqdm
 
 import torch
 import torchvision.transforms as TVT
+import wandb
 from torch.optim import AdamW
 from torch.utils.data import DataLoader
 from torchvision.datasets import MNIST
+from torchvision.utils import save_image
 
 from pae.dataset import _dynamically_binarize
 from pae.model import NADE
-from pae.util import Metric, BNLLLoss
+from pae.util import Metric, BNLLLoss, setup, clear
 
 
 def get_arg_parser():
     # 1. setting
     parser = ArgumentParser(description='pytorch-auto-encoder')
     parser.add_argument('--data-dir', type=str, default=os.path.join('data', 'mnist'), help='root path of dataset')
-    parser.add_argument('--log-dir', type=str, default='log', help='root log dir')
+    parser.add_argument('--output-dir', type=str, default='log', help='root log dir')
+    parser.add_argument('--who', type=str, default="hankyul2", help="entity name used for logger")
     parser.add_argument('--project-name', type=str, default="pytorch-ae", help="project name used for logger")
+    parser.add_argument('--exp-target', type=str, default=['model_name'], help="arguments for experiment name")
     parser.add_argument('--cuda', type=str, default='0,', help="cuda devices")
+    parser.add_argument('--print-freq', type=int, default=20, help='print log frequency')
+    parser.add_argument('--use-wandb', action='store_true', help="use wandb to log metric")
+    parser.add_argument('--seed', type=int, default=42, help='fix randomness for better reproducibility')
 
     # 2. model
     parser.add_argument('-m', '--model-name', type=str, default='NADE', help='the name of model')
@@ -37,28 +40,31 @@ def get_arg_parser():
 
 
 @torch.no_grad()
-def validate(dataloader, f, critic, device, epoch, log_dir):
+def validate(dataloader, f, critic, args, epoch):
     loss_m = Metric(header='Loss:')
-    prog_bar = tqdm(dataloader, leave=True)
-    for x, y in prog_bar:
-        x = x.to(device)
+    total_iter = len(dataloader)
+    for batch_idx, (x, y) in enumerate(dataloader):
+        x = x.to(args.device)
 
         y_hat, x_hat = f(x)
         loss = critic(y_hat, x)
 
         loss_m.update(loss, len(x))
-        prog_bar.set_description(f"Val {loss_m}")
 
-    save_image(x_hat[:16], os.path.join(log_dir, f"val_{epoch}.jpg"))
+        if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
+            num_digits = len(str(total_iter))
+            args.log(f"VALID({epoch:03}): [{batch_idx:>{num_digits}}/{total_iter}] {loss_m}")
+
+    save_image(x_hat[:16], os.path.join(args.log_dir, f"val_{epoch}.jpg"))
 
     return loss_m.compute()
 
 
-def train(dataloader, f, critic, optim, device):
+def train(dataloader, f, critic, optim, args, epoch):
     loss_m = Metric(header='Loss:')
-    prog_bar = tqdm(dataloader, leave=True)
-    for x, y in prog_bar:
-        x = x.to(device)
+    total_iter = len(dataloader)
+    for batch_idx, (x, y) in enumerate(dataloader):
+        x = x.to(args.device)
 
         y_hat, x_hat = f(x)
         loss = critic(y_hat, x)
@@ -67,22 +73,17 @@ def train(dataloader, f, critic, optim, device):
         optim.zero_grad()
 
         loss_m.update(loss, len(x))
-        prog_bar.set_description(f"Train {loss_m}")
+
+        if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
+            num_digits = len(str(total_iter))
+            args.log(f"TRAIN({epoch:03}): [{batch_idx:>{num_digits}}/{total_iter}] {loss_m}")
 
     return loss_m.compute()
 
 
-def setup(args):
-    os.environ['CUDA_DEVICE_ORDER'] = 'PCI_BUS_ID'
-    os.environ['CUDA_VISIBLE_DEVICES'] = args.cuda
-    args.device = 'cuda:0'
-
-    log_root_path = os.path.join(args.log_dir, args.model_name)
-    Path(log_root_path).mkdir(exist_ok=True, parents=True)
-
-    args.run_id = f"v{len(os.listdir(log_root_path))}"
-    args.log_dir = os.path.join(log_root_path, args.run_id)
-    Path(args.log_dir).mkdir(exist_ok=True, parents=True)
+def sample(f, args, epoch):
+    sampled_img = f.sample(16, args.device).reshape(16, 1, 28, 28)
+    save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
 
 
 def run(args):
@@ -103,17 +104,26 @@ def run(args):
     critic = BNLLLoss()
 
     best_loss = 1000.0
+    num_digit = len(str(args.epoch))
     for epoch in range(args.epoch):
-        train_loss = train(train_dataloader, f, critic, optim, args.device)
-        val_loss = validate(val_dataloader, f, critic, args.device, epoch, args.log_dir)
-        sampled_img = f.sample(16, args.device).reshape(16, 1, 28, 28)
-        save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
+        train_loss = train(train_dataloader, f, critic, optim, args, epoch)
+        val_loss = validate(val_dataloader, f, critic, args, epoch)
+        sample(f, args, epoch)
+
+        args.log(f"EPOCH({epoch:>{num_digit}}/{args.epoch}): Train Loss: {train_loss:.04f} Val Loss: {val_loss:.04f}")
+        if args.use_wandb:
+            args.log({
+                'train_loss':train_loss, 'val_loss':val_loss,
+                'val_img': wandb.Image(os.path.join(args.log_dir, f'val_{epoch}.jpg')),
+                'sample_img': wandb.Image(os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
+            }, metric=True)
 
         if best_loss > val_loss:
             best_loss = val_loss
             state_dict = {k: v.cpu() for k, v in f.state_dict().items()},
             torch.save(state_dict, os.path.join(args.log_dir, f'{args.model_name}.pth'))
-            print(f"saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
+            args.log(f"Saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
+    clear(args)
 
 
 if __name__ == '__main__':

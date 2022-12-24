@@ -3,17 +3,9 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from torchvision.utils import save_image
-from tqdm import tqdm
-
 import torch
-import torchvision.transforms as TVT
-from torch.optim import AdamW
-from torch.utils.data import DataLoader
-from torchvision.datasets import MNIST
 
-from pae.dataset import _dynamically_binarize
 from pae.model import NADE
-from pae.util import Metric, BNLLLoss
 
 
 def get_arg_parser():
