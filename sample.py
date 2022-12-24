@@ -42,7 +42,10 @@ def run(args):
         f = NADE().to(args.device)
     else:
         AssertionError(f"{args.model_name} is not supported yet!")
+
     state_dict = torch.load(args.checkpoint, map_location='cpu')
+    if isinstance(state_dict, (list, tuple)):
+        state_dict = state_dict[0]
     f.load_state_dict(state_dict)
 
     sampled_img = f.sample(16, args.device).reshape(16, 1, 28, 28)
