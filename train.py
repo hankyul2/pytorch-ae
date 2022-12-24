@@ -102,10 +102,14 @@ def run(args):
     optim = AdamW(f.parameters(), lr=args.lr, weight_decay=args.wd)
     critic = BNLLLoss()
 
+    best_loss = 1000.0
     for epoch in range(args.epoch):
         train_loss = train(train_dataloader, f, critic, optim, args.device)
         val_loss = validate(val_dataloader, f, critic, args.device, epoch, args.log_dir)
-        # print(f"{epoch}/{args.epoch} epoch {train_loss:0.4f} train loss {val_loss:0.4f} val loss")
+        if best_loss > val_loss:
+            best_loss = val_loss
+            torch.save({k: v.cpu() for k, v in f.state_dict()}, os.path.join(args.log_dir, f'{args.model_name}.pth'))
+            print(f"saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
 
 
 if __name__ == '__main__':
