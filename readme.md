@@ -19,16 +19,29 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 ## :seedling:Tutorial
 
-1. git clone this repo
+1. Clone this repo.
 
    ```bash
    git clone https://github.com/hankyul2/pytorch-ae.git
    ```
 
-2. train your model
+2. Train your model. 
 
    ```bash
    python3 train.py -m nade
+   ```
+
+3. Use trained model in your way. We provide code snippet for how to sample from model.
+
+   ```python
+   import torch
+   from torchvision.utils import save_image
+   from pae.model import NADE
+   
+   model = NADE()
+   model.load_state_dict(torch.load('your_checkpont.pth'))
+   generated_img = model.sample(16, 'cpu').reshape(16, 1, 28, 28)
+   save_image(generated_img, 'generated_by_NADE.jpg')
    ```
 
    
@@ -37,27 +50,27 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
-| Method              | Command                    | Binarized MNIST | Pretrained model                                   |
-| ------------------- | -------------------------- | --------------- | -------------------------------------------------- |
-| NADE[^1]            | `python3 train.py -m nade` | 86.1            | [[code](pae/model/nade.py)] [[weight]()] [[log]()] |
-| PixelRNN[^2]        |                            |                 |                                                    |
-| PixelCNN[^3]        |                            |                 |                                                    |
-| PixelSnail[^4]      |                            |                 |                                                    |
-| AE[^5]              |                            |                 |                                                    |
-| VAE[^6]             |                            |                 |                                                    |
-| Categorical-VAE[^7] |                            |                 |                                                    |
-| VQ-VAE[^8]          |                            |                 |                                                    |
-| VQ-VAE-v2[^9]       |                            |                 |                                                    |
-| dVAE[^10]           |                            |                 |                                                    |
-| CDM[^11]            |                            |                 |                                                    |
+| Method              | Command                    | Binarized MNIST | Pretrained model                                             |
+| ------------------- | -------------------------- | --------------- | ------------------------------------------------------------ |
+| NADE[^1]            | `python3 train.py -m nade` | 86.1            | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/log.txt)] |
+| PixelRNN[^2]        |                            |                 |                                                              |
+| PixelCNN[^3]        |                            |                 |                                                              |
+| PixelSnail[^4]      |                            |                 |                                                              |
+| AE[^5]              |                            |                 |                                                              |
+| VAE[^6]             |                            |                 |                                                              |
+| Categorical-VAE[^7] |                            |                 |                                                              |
+| VQ-VAE[^8]          |                            |                 |                                                              |
+| VQ-VAE-v2[^9]       |                            |                 |                                                              |
+| dVAE[^10]           |                            |                 |                                                              |
+| CDM[^11]            |                            |                 |                                                              |
 
 
 
 ## :framed_picture:Generated Image
 
-| Method              | 25 Epoch                                                     | 50 Epoch                                                     |
+| Method              | Reconstructed Image                                          | Randomly Sampled Image                                       |
 | ------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
-| NADE[^1]            | ![val_25](https://user-images.githubusercontent.com/31476895/209291712-430abc71-3b6e-4963-81b2-df7b062ebfa0.jpg) | ![hi](https://user-images.githubusercontent.com/31476895/209291150-95a55130-4624-4004-8ddc-6d5b57ed7e92.jpg) |
+| NADE[^1]            | ![val_49](https://user-images.githubusercontent.com/31476895/209418791-214369c5-c793-46ee-867b-d7e95fc70202.jpg) | ![sample_49](https://user-images.githubusercontent.com/31476895/209418789-2f5a7ecd-f6f4-4caa-adf1-7d9dd8795705.jpg) |
 | PixelRNN[^2]        |                                                              |                                                              |
 | PixelCNN[^3]        |                                                              |                                                              |
 | PixelSnail[^4]      |                                                              |                                                              |
