@@ -46,8 +46,8 @@ def validate(dataloader, f, critic, args, epoch):
     for batch_idx, (x, y) in enumerate(dataloader):
         x = x.to(args.device)
 
-        y_hat, x_hat = f(x)
-        loss = critic(y_hat, x)
+        logit, x_recon = f(x)
+        loss = critic(logit, x)
 
         loss_m.update(loss, len(x))
 
@@ -55,7 +55,7 @@ def validate(dataloader, f, critic, args, epoch):
             num_digits = len(str(total_iter))
             args.log(f"VALID({epoch:03}): [{batch_idx:>{num_digits}}/{total_iter}] {loss_m}")
 
-    save_image(x_hat[:16], os.path.join(args.log_dir, f"val_{epoch}.jpg"))
+    save_image(x_recon[:16], os.path.join(args.log_dir, f"val_{epoch}.jpg"))
 
     return loss_m.compute()
 
@@ -66,8 +66,8 @@ def train(dataloader, f, critic, optim, args, epoch):
     for batch_idx, (x, y) in enumerate(dataloader):
         x = x.to(args.device)
 
-        y_hat, x_hat = f(x)
-        loss = critic(y_hat, x)
+        logit, x_recon = f(x)
+        loss = critic(logit, x)
         loss.backward()
         optim.step()
         optim.zero_grad()

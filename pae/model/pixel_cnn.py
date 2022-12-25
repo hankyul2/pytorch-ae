@@ -77,18 +77,19 @@ class PixelCNN(nn.Module):
         x = self.stem(x)
         for layer in self.layers:
             x = layer(x)
-        x = self.head(x)
-        x = torch.sigmoid(x)
+        l = self.head(x)
 
-        b, c, h, w = x.shape
-        p = x.reshape(b, self.c, self.category, h, w).permute(0, 1, 3, 4, 2)
+        b, c, h, w = l.shape
+        p = l.reshape(b, self.c, self.category, h, w).permute(0, 1, 3, 4, 2)
 
-        if self.c == 1:
+        if self.category == 1:
+            p = torch.sigmoid(p)
             sample = Bernoulli(probs=p).sample().squeeze(-1)
         else:
+            p = torch.softmax(p, dim=-1)
             sample = Categorical(probs=p).sample().squeeze(-1)
 
-        return x, sample
+        return l, sample
 
     @torch.no_grad()
     def sample(self, shape, device):
@@ -104,10 +105,14 @@ class PixelCNN(nn.Module):
 
 
 if __name__ == '__main__':
-    x = torch.rand(2, 3, 28, 28)
-    f = PixelCNN(ch=3, category=256)
-    y, sample = f(x)
-    print(y.shape)
-    print(sample.shape)
-    img = f.sample((2, 3, 28, 28), 'cpu')
-    print(img.shape)
+    x = torch.rand(2, 1, 28, 28)
+    f = PixelCNN(ch=1, category=1)
+    logit, sample = f(x)
+    img = f.sample((2, 1, 28, 28), 'cpu')
+
+    assert list(logit.shape) == [2, 1, 28, 28]
+    print("[TEST] logit shape test success")
+    assert list(sample.shape) == [2, 1, 28, 28]
+    print("[TEST] sample shape test success")
+    assert list(img.shape) == [2, 1, 28, 28]
+    print("[TEST] sample shape test2 success")

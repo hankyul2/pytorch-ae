@@ -1,10 +1,19 @@
 import torch
-from torch.nn import BCELoss
+from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss
 
 
-class BNLLLoss(BCELoss):
+class BNLLLoss(BCEWithLogitsLoss):
     def __init__(self):
         """Binary Negative Log Likelihood (BNLL)"""
+        super().__init__(reduction='sum')
+    def forward(self, x, y):
+        output = super().forward(x, y)
+        return output / len(x)
+
+
+class CNLLLoss(CrossEntropyLoss):
+    def __init__(self):
+        """Negative Log Likelihood (BNLL)"""
         super().__init__(reduction='sum')
     def forward(self, x, y):
         output = super().forward(x, y)
