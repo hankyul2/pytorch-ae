@@ -1,0 +1,22 @@
+{
+  "MNIST": {
+    "data_dir": "data/mnist", "dataset_type": "MNIST",
+    "num_workers": 4, "pin_memory": true, "amp": true, "channels_last": true,
+    "train_size": [28, 28], "train_resize_mode": "ResizeRandomCrop", "random_crop_pad": 0,
+    "hflip": 0.0, "auto_aug": false, "test_size": [28, 28], "center_crop_ptr": 1.0,
+    "gaussian_noise": false, "remode": 0.0,
+    "mean": [0], "std":  [1],
+    "batch_size": 512, "epoch": 300, "lr": 1e-3, "weight_decay": 1e-4, "optimizer": "adamw",
+    "scheduler": "cosine", "min_lr": 1e-6, "warmup_lr": 1e-5, "warmup_epoch": 5
+  },
+  "CIFAR10": {
+    "data_dir": "data/cifar10", "dataset_type": "CIFAR10",
+    "num_workers": 4, "pin_memory": true, "amp": true, "channels_last": true,
+    "train_size": [32, 32], "train_resize_mode": "ResizeRandomCrop", "random_crop_pad": 0,
+    "hflip": 0.0, "auto_aug": false, "test_size": [32, 32], "center_crop_ptr": 1.0,
+    "gaussian_noise": false, "remode": 0.0,
+    "mean": [0.491400, 0.482159, 0.446531], "std": [0.247032, 0.243485, 0.261588],
+    "batch_size": 512, "epoch": 300, "lr": 1e-3, "weight_decay": 1e-4, "optimizer": "adamw",
+    "scheduler": "cosine", "min_lr": 1e-6, "warmup_lr": 1e-5, "warmup_epoch": 5
+  }
+}

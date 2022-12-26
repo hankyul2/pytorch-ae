@@ -1,3 +1,4 @@
 .idea/*
 assets/*
+tmux/*
 pae/model/pixel_rnn.py

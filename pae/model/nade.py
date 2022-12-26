@@ -35,7 +35,7 @@ class NADE(nn.Module):
             p_d = torch.sigmoid(l_d) # B x 1
 
             x_org = x[:, d:d+1]
-            x_new = Bernoulli(probs=p_d).sample()
+            x_new = Bernoulli(probs=p_d).sample().to(x_org.dtype)
             need_to_sample = x_org == -1
             x_d = torch.where(need_to_sample, x_new, x_org)
             a_d = x_d @ self.W[:, d:d+1].t() + a_d
@@ -49,7 +49,7 @@ class NADE(nn.Module):
         return l, x_sample
 
     @torch.no_grad()
-    def sample(self, shape, device):
+    def sample(self, shape, device, *args, **kwargs):
         x = torch.full(shape, -1).to(torch.float).to(device)
         _, x_sample = self.forward(x)
         return x_sample

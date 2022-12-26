@@ -1,31 +1,58 @@
+import json
 import os
 from argparse import ArgumentParser
 
 import torch
-import torchvision.transforms as TVT
 import wandb
-from torch.optim import AdamW
-from torch.utils.data import DataLoader
-from torchvision.datasets import MNIST
 from torchvision.utils import save_image
 
-from pae.dataset import _dynamically_binarize
-from pae.model import NADE, PixelCNN
-from pae.util import Metric, BNLLLoss, setup, clear
+from pae.dataset import get_dataset, get_dataloader
+from pae.model import get_model
+from pae.util import Metric, setup, clear, get_optimizer_and_scheduler, get_criterion_scaler, reduce_mean
 
 
 def get_arg_parser():
     # 1. setting
     parser = ArgumentParser(description='pytorch-auto-encoder')
+    parser.add_argument('--config', type=str, default='config/train.json', help='train configuration json file path')
     parser.add_argument('--data-dir', type=str, default=os.path.join('data', 'mnist'), help='root path of dataset')
     parser.add_argument('--output-dir', type=str, default='log', help='root log dir')
     parser.add_argument('--who', type=str, default="hankyul2", help="entity name used for logger")
     parser.add_argument('--project-name', type=str, default="pytorch-ae", help="project name used for logger")
-    parser.add_argument('--exp-target', type=str, default=['model_name'], help="arguments for experiment name")
-    parser.add_argument('--cuda', type=str, default='0,', help="cuda devices")
+    parser.add_argument('--exp-target', type=str, default=['dataset_type', 'model_name'], help="arguments for experiment name")
+    parser.add_argument('-c', '--cuda', type=str, default='0,', help="cuda devices")
     parser.add_argument('--print-freq', type=int, default=20, help='print log frequency')
     parser.add_argument('--use-wandb', action='store_true', help="use wandb to log metric")
     parser.add_argument('--seed', type=int, default=42, help='fix randomness for better reproducibility')
+    parser.add_argument('--amp', action='store_true', default=False, help='enable native amp(fp16) training')
+    parser.add_argument('--channels-last', action='store_true', help='change memory format to channels last')
+
+    # 2. augmentation & dataset & dataloader
+    parser.add_argument('-d', '--dataset-type', type=str, default='MNIST', choices=['MNIST', 'CIFAR10'], help='dataset')
+    parser.add_argument('--train-size', type=int, default=(224, 224), nargs='+', help='train image size')
+    parser.add_argument('--train-resize-mode', type=str, default='RandomResizedCrop', help='train image resize mode')
+    parser.add_argument('--random-crop-pad', type=int, default=0, help='pad size for ResizeRandomCrop')
+    parser.add_argument('--random-crop-scale', type=float, default=(0.08, 1.0), nargs='+',
+                        help='train image resized scale for RandomResizedCrop')
+    parser.add_argument('--random-crop-ratio', type=float, default=(3 / 4, 4 / 3), nargs='+',
+                        help='train image resized ratio for RandomResizedCrop')
+    parser.add_argument('-hf', '--hflip', type=float, default=0.5, help='random horizontal flip')
+    parser.add_argument('-aa', '--auto-aug', action='store_true', default=False, help='enable timm rand augmentation')
+    parser.add_argument('--cutmix', type=float, default=None, help='cutmix probability')
+    parser.add_argument('--mixup', type=float, default=None, help='mix probability')
+    parser.add_argument('-re', '--remode', type=float, default=None, help='random erasing probability')
+    parser.add_argument('--gaussian-noise', action='store_true', help='add gaussian noise')
+    parser.add_argument('--test-size', type=int, default=(224, 224), nargs='+', help='test image size')
+    parser.add_argument('--test-resize-mode', type=str, default='resize_shorter', choices=['resize_shorter', 'resize'],
+                         help='test resize mode')
+    parser.add_argument('--center-crop-ptr', type=float, default=0.875, help='test image crop percent')
+    parser.add_argument('--interpolation', type=str, default='bicubic', help='image interpolation mode')
+    parser.add_argument('--mean', type=float, default=(0.485, 0.456, 0.406), nargs='+', help='image mean')
+    parser.add_argument('--std', type=float, default=(0.229, 0.224, 0.225), nargs='+', help='image std')
+    parser.add_argument('--aug-repeat', type=int, default=None, help='repeat augmentation')
+    parser.add_argument('--drop-last', default=False, action='store_true', help='enable drop_last in train dataloader')
+    parser.add_argument('-j', '--num-workers', type=int, default=4, help='number of workers')
+    parser.add_argument('--pin-memory', action='store_true', default=False, help='pin memory in dataloader')
 
     # 2. model
     parser.add_argument('-m', '--model-name', type=str, default='NADE', help='the name of model')
@@ -34,22 +61,51 @@ def get_arg_parser():
     parser.add_argument('--batch-size', type=int, default=512, help='the number of batch per step')
     parser.add_argument('--epoch', type=int, default=50, help='the number of training epoch')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
-    parser.add_argument('--wd', type=float, default=1e-4, help='weight decay')
+    parser.add_argument('--weight_decay', type=float, default=1e-4, help='weight decay')
+    parser.add_argument('--optimizer', type=str, default='adamw', help='optimizer name')
+    parser.add_argument('--momentum', type=float, default=0.9, help='optimizer momentum')
+    parser.add_argument('--nesterov', action='store_true', default=False, help='use nesterov momentum')
+    parser.add_argument('--betas', type=float, nargs=2, default=[0.9, 0.999], help='adam optimizer beta parameter')
+    parser.add_argument('--eps', type=float, default=1e-6, help='optimizer eps')
+    parser.add_argument('--scheduler', type=str, default='cosine', help='lr scheduler')
+    parser.add_argument('--step-size', type=int, default=2, help='lr decay step size')
+    parser.add_argument('--decay-rate', type=float, default=0.1, help='lr decay rate')
+    parser.add_argument('--min-lr', type=float, default=1e-6, help='lowest lr used for cosine scheduler')
+    parser.add_argument('--restart-epoch', type=int, default=20, help='warmup restart epoch period')
+    parser.add_argument('--milestones', type=int, nargs='+', default=[150, 225], help='multistep lr decay step')
+    parser.add_argument('--warmup-scheduler', type=str, default='linear', help='warmup lr scheduler type')
+    parser.add_argument('--warmup-lr', type=float, default=1e-4, help='warmup start lr')
+    parser.add_argument('--warmup-epoch', type=int, default=5, help='warmup epoch')
+    parser.add_argument('--grad-norm', type=float, default=None, help='gradient clipping threshold')
+    parser.add_argument('--grad-accum', type=int, default=1, help='gradient accumulation')
 
     return parser
 
 
 @torch.no_grad()
-def validate(dataloader, f, critic, args, epoch):
+def validate(dataloader, model, critic, args, epoch):
     loss_m = Metric(header='Loss:')
     total_iter = len(dataloader)
-    for batch_idx, (x, y) in enumerate(dataloader):
-        x = x.to(args.device)
 
-        logit, x_recon = f(x)
-        loss = critic(logit, x)
+    model.eval()
+    if args.channels_last:
+        model = model.to(memory_format=torch.channels_last)
 
-        loss_m.update(loss, len(x))
+    for batch_idx, ((x_in, x_out), y) in enumerate(dataloader):
+        x_in = x_in.to(args.device)
+        x_out = x_out.to(args.device)
+
+        if args.channels_last:
+            x_in = x_in.to(memory_format=torch.channels_last)
+
+        with torch.cuda.amp.autocast(args.amp):
+            logit, x_recon = model(x_in)
+            loss, nll_loss = critic(logit, x_out)
+
+        if args.distributed:
+            loss = reduce_mean(nll_loss, args.world_size)
+
+        loss_m.update(loss, len(x_in))
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
@@ -60,19 +116,41 @@ def validate(dataloader, f, critic, args, epoch):
     return loss_m.compute()
 
 
-def train(dataloader, f, critic, optim, args, epoch):
+def train(dataloader, model, critic, optimizer, scheduler, scaler, args, epoch):
     loss_m = Metric(header='Loss:')
     total_iter = len(dataloader)
-    for batch_idx, (x, y) in enumerate(dataloader):
-        x = x.to(args.device)
 
-        logit, x_recon = f(x)
-        loss = critic(logit, x)
-        loss.backward()
-        optim.step()
-        optim.zero_grad()
+    model.train()
+    if args.channels_last:
+        model = model.to(memory_format=torch.channels_last)
 
-        loss_m.update(loss, len(x))
+    for batch_idx, ((x_in, x_out), y) in enumerate(dataloader):
+        x_in = x_in.to(args.device)
+        x_out = x_out.to(args.device)
+
+        if args.channels_last:
+            x_in = x_in.to(memory_format=torch.channels_last)
+
+        with torch.cuda.amp.autocast(args.amp):
+            logit, x_recon = model(x_in)
+            loss, nll_loss = critic(logit, x_out)
+
+        if args.amp:
+            scaler(loss, optimizer, model.parameters(), scheduler, args.grad_norm, batch_idx % args.grad_accum == 0)
+        else:
+            loss.backward()
+            if args.grad_norm:
+                torch.nn.utils.clip_grad_norm_(model.parameters(), args.grad_norm)
+            if batch_idx % args.grad_accum == 0:
+                optimizer.step()
+                optimizer.zero_grad()
+                if scheduler:
+                    scheduler.step()
+
+        if args.distributed:
+            loss = reduce_mean(nll_loss, args.world_size)
+
+        loss_m.update(loss, len(x_in))
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
@@ -81,36 +159,41 @@ def train(dataloader, f, critic, optim, args, epoch):
     return loss_m.compute()
 
 
+@torch.no_grad()
 def sample(f, args, epoch):
-    sampled_img = f.sample((16, 1, 28, 28), args.device)
-    save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
+    shape = [16, args.num_channels, *args.train_size]
+
+    with torch.cuda.amp.autocast(args.amp):
+        sampled_img = f.sample(shape, args.device, args.mean, args.std)
+
+    if args.is_rank_zero:
+        save_image(sampled_img, os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
 
 
 def run(args):
     setup(args)
 
-    transform = TVT.Compose([TVT.ToTensor(), _dynamically_binarize])
-    train_dataset = MNIST(args.data_dir, train=True, download=True, transform=transform)
-    val_dataset = MNIST(args.data_dir, train=False, download=True, transform=transform)
-    train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
-    val_dataloader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4)
+    # 1. define transform & load dataset
+    train_dataset, val_dataset = get_dataset(args)
+    train_dataloader, val_dataloader = get_dataloader(train_dataset, val_dataset, args)
 
-    if args.model_name == 'NADE':
-        f = NADE().to(args.device)
-    elif args.model_name == 'PixelCNN':
-        f = PixelCNN().to(args.device)
-    else:
-        AssertionError(f"{args.model_name} is not supported yet!")
+    # 2. load model
+    model, ddp_model = get_model(args)
 
-    optim = AdamW(f.parameters(), lr=args.lr, weight_decay=args.wd)
-    critic = BNLLLoss()
+    # 3. load optimizer, scheduler, criterion
+    optimizer, scheduler = get_optimizer_and_scheduler(model, args)
+    criterion, scaler = get_criterion_scaler(args)
 
     best_loss = 1000.0
     num_digit = len(str(args.epoch))
     for epoch in range(args.epoch):
-        train_loss = train(train_dataloader, f, critic, optim, args, epoch)
-        val_loss = validate(val_dataloader, f, critic, args, epoch)
-        sample(f, args, epoch)
+        if args.distributed:
+            train_dataloader.sampler.set_epoch(epoch)
+
+        train_loss = train(train_dataloader, ddp_model if args.distributed else model,
+                           criterion, optimizer, scheduler, scaler, args, epoch)
+        val_loss = validate(val_dataloader, model, criterion, args, epoch)
+        sample(model, args, epoch)
 
         args.log(f"EPOCH({epoch:>{num_digit}}/{args.epoch}): Train Loss: {train_loss:.04f} Val Loss: {val_loss:.04f}")
         if args.use_wandb:
@@ -120,10 +203,9 @@ def run(args):
                 'sample_img': wandb.Image(os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
             }, metric=True)
 
-        if best_loss > val_loss:
+        if args.is_rank_zero and best_loss > val_loss:
             best_loss = val_loss
-            state_dict = {k: v.cpu() for k, v in f.state_dict().items()},
-            torch.save(state_dict, os.path.join(args.log_dir, f'{args.model_name}.pth'))
+            torch.save(model.state_dict(), os.path.join(args.log_dir, f'{args.model_name}.pth'))
             args.log(f"Saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
     clear(args)
 
@@ -131,4 +213,10 @@ def run(args):
 if __name__ == '__main__':
     parser = get_arg_parser()
     args = parser.parse_args()
+
+    with open(args.config, 'rt') as f:
+        default = json.load(f)[args.dataset_type]
+    parser.set_defaults(**default)
+    args = parser.parse_args()
+
     run(args)
