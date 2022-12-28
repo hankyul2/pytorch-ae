@@ -78,6 +78,7 @@ def get_arg_parser():
     parser.add_argument('--warmup-epoch', type=int, default=5, help='warmup epoch')
     parser.add_argument('--grad-norm', type=float, default=None, help='gradient clipping threshold')
     parser.add_argument('--grad-accum', type=int, default=1, help='gradient accumulation')
+    parser.add_argument('--early-stop-epoch', type=int, default=50, help='early stop epoch')
 
     return parser
 
@@ -184,6 +185,7 @@ def run(args):
     optimizer, scheduler = get_optimizer_and_scheduler(model, args)
     criterion, scaler = get_criterion_scaler(args)
 
+    best_epoch = 0
     best_loss = 1000.0
     num_digit = len(str(args.epoch))
     for epoch in range(args.epoch):
@@ -203,10 +205,17 @@ def run(args):
                 'sample_img': wandb.Image(os.path.join(args.log_dir, f'sample_{epoch}.jpg'))
             }, metric=True)
 
-        if args.is_rank_zero and best_loss > val_loss:
+        if best_loss > val_loss:
+            best_epoch = epoch
             best_loss = val_loss
-            torch.save(model.state_dict(), os.path.join(args.log_dir, f'{args.model_name}.pth'))
-            args.log(f"Saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
+            if args.is_rank_zero:
+                torch.save(model.state_dict(), os.path.join(args.log_dir, f'{args.model_name}.pth'))
+                args.log(f"Saved model (val loss: {best_loss:0.4f}) in to {args.log_dir}")
+
+        if args.early_stop_epoch and best_epoch + args.early_stop_epoch < epoch:
+            args.log(f"Early stop at {epoch}")
+            break
+
     clear(args)
 
 
