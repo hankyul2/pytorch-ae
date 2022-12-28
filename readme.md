@@ -50,22 +50,22 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
-| Method              | Command                        | Binarized MNIST | Pretrained model                                             |
-| ------------------- | ------------------------------ | --------------- | ------------------------------------------------------------ |
-| NADE[^1]            | `python3 train.py -m NADE`     | 84.0            | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
-| MADE[^2]            | `python3 train.py -m MADE`     | 83.8            | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
-| PixelCNN[^3]        | `python3 train.py -m PixelCNN` | 81.7            | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
-| Gated PixelCNN[^4]  |                                |                 |                                                              |
-| PixelCNN++[^5]      |                                |                 |                                                              |
-| PixelSnail[^6]      |                                |                 |                                                              |
-| AE[^7]              |                                |                 |                                                              |
-| VAE[^8]             |                                |                 |                                                              |
-| Categorical-VAE[^9] |                                |                 |                                                              |
-| VQ-VAE[^10]         |                                |                 |                                                              |
-| VQ-VAE-v2[^11]      |                                |                 |                                                              |
-| dVAE[^12]           |                                |                 |                                                              |
-| CDM[^13]            |                                |                 |                                                              |
-|                     |                                |                 |                                                              |
+| Method              | Command                        | NLL  | Pretrained model                                             |
+| ------------------- | ------------------------------ | ---- | ------------------------------------------------------------ |
+| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
+| MADE[^2]            | `python3 train.py -m MADE`     | 83.8 | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
+| PixelCNN[^3]        | `python3 train.py -m PixelCNN` | 81.7 | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
+| Gated PixelCNN[^4]  |                                |      |                                                              |
+| PixelCNN++[^5]      |                                |      |                                                              |
+| PixelSnail[^6]      |                                |      |                                                              |
+| AE[^7]              |                                |      |                                                              |
+| VAE[^8]             |                                |      |                                                              |
+| Categorical-VAE[^9] |                                |      |                                                              |
+| VQ-VAE[^10]         |                                |      |                                                              |
+| VQ-VAE-v2[^11]      |                                |      |                                                              |
+| dVAE[^12]           |                                |      |                                                              |
+| CDM[^13]            |                                |      |                                                              |
+|                     |                                |      |                                                              |
 
 Issues
 
