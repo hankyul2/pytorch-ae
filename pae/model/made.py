@@ -21,7 +21,7 @@ class MaskLinear(nn.Linear):
 
 class MADE(nn.Module):
     SEED = 1000
-    def __init__(self, d=784, h=8000, l=2, n_mask=1):
+    def __init__(self, d=784, h=8000, l=1, n_mask=1):
         super().__init__()
         assert n_mask == 1, f"The number of mask should be 1, not {n_mask}."
         self.d = d
@@ -45,11 +45,12 @@ class MADE(nn.Module):
             g = torch.Generator().manual_seed(self.SEED + mask_idx)
 
             # 2. generate random connection
-            connections = [torch.randperm(self.d, generator=g)]
+            last_order = first_order = torch.randperm(self.d, generator=g)
+            connections = [first_order]
             for i, dim in enumerate(self.dims[1:-1]):
                 low = min(connections[i]) if i > 0 else 0
                 connections.append(torch.randint(low, self.d-1, (dim,), generator=g))
-            connections.append(connections[0])
+            connections.append(last_order)
 
             # 3. generate mask
             for layer_idx in range(self.l-1):
@@ -99,22 +100,19 @@ class MADE(nn.Module):
     @torch.no_grad()
     def sample(self, shape, device, *args, **kwargs):
         B, C, H, W = shape
+        mask_idx = random.randint(0, self.n_mask - 1)
+        x = torch.full(shape, -1).to(torch.float).to(device)
 
-        output = list()
-        for mask_idx in range(self.n_mask):
-            x = torch.full(shape, -1).to(torch.float).to(device)
-            self.choose_mask(mask_idx)
-            order = self.orders[mask_idx]
-            i = 0
-            for h in range(H):
-                for w in range(W):
-                    _, sample = self.forward_once(x)
-                    x[:, :, order[i] // W,  order[i] % W] = sample.reshape(B, -1)[:, order[i]:order[i]+1]
-                    i += 1
-            output.append(x)
-        output = sum(output) / len(output)
+        self.choose_mask(mask_idx)
+        order = self.orders[mask_idx]
+        i = 0
+        for h in range(H):
+            for w in range(W):
+                _, sample = self.forward_once(x)
+                x[:, :, order[i] // W,  order[i] % W] = sample.reshape(B, -1)[:, order[i]:order[i]+1]
+                i += 1
 
-        return output
+        return x
 
 
 if __name__ == '__main__':
