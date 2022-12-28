@@ -10,7 +10,7 @@ def _dynamically_binarize(x):
     return distributions.Bernoulli(probs=x).sample()
 
 
-def gauss_noise_tensor(img, sigma=0.01):
+def gauss_noise_tensor(img, sigma=0.1):
     return img + sigma * torch.randn_like(img)
 
 
@@ -71,7 +71,8 @@ class TrainTransform:
 
         if self.binary_img:
             x_in = self.corrupt_and_normalize(x)
-            x_out = _dynamically_binarize(x)
+            # x_out = _dynamically_binarize(x)
+            x_out = x_in
         else:
             x_in = self.corrupt_and_normalize(x)
             x_out = (x * 255).long()

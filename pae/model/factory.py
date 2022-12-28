@@ -3,11 +3,14 @@ from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 
 from pae.model import NADE, PixelCNN
+from pae.model.made import MADE
 
 
 def get_model(args):
     if args.model_name == 'NADE':
         model = NADE().to(args.device)
+    elif args.model_name == 'MADE':
+        model = MADE().to(args.device)
     elif args.model_name == 'PixelCNN':
         model = PixelCNN(ch=args.num_channels, category=args.num_classes, dataset=args.dataset_type).to(args.device)
     else:
