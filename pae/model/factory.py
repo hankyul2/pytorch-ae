@@ -2,8 +2,7 @@ import torch
 from torch import nn
 from torch.nn.parallel import DistributedDataParallel
 
-from pae.model import NADE, PixelCNN
-from pae.model.made import MADE
+from pae.model import NADE, MADE, PixelCNN, GatedPixelCNN
 
 
 def get_model(args):
@@ -13,6 +12,8 @@ def get_model(args):
         model = MADE().to(args.device)
     elif args.model_name == 'PixelCNN':
         model = PixelCNN(ch=args.num_channels, category=args.num_classes, dataset=args.dataset_type).to(args.device)
+    elif args.model_name == 'GatedPixelCNN':
+        model = GatedPixelCNN(ch=args.num_channels, category=args.num_classes, dataset=args.dataset_type).to(args.device)
     else:
         AssertionError(f"{args.model_name} is not supported yet!")
 
