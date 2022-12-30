@@ -10,6 +10,7 @@ from datetime import datetime
 import numpy
 import torch
 import wandb
+import torch.distributed as dist
 
 
 def allow_print_to_master(is_master):
@@ -96,6 +97,9 @@ def init_logger(args):
     args.log_dir = os.path.join(args.output_dir, args.exp_name)
     args.text_log_path = os.path.join(args.log_dir, 'log.txt')
     args.best_weight_path = os.path.join(args.log_dir, 'best_weight.pth')
+
+    if args.distributed:
+        dist.barrier()  # to ensure have save version id (must be same for knn classifier)
 
     if args.is_rank_zero:
         Path(args.log_dir).mkdir(parents=True, exist_ok=True)
