@@ -101,7 +101,7 @@ Issues
 [^3]: **PixelCNN**: "pixel recurrent neural networks", PMLR, 2016 [[paper](http://proceedings.mlr.press/v48/oord16.pdf)] 
 [^4]: **Gated PixelCNN**: "Conditional Image Generation with PixelCNN Decoders", NIPS, 2016 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)]
 [^5]: **PixelCNN++**: "Improving the PixelCNN with Discretized Logistic Mixture Likelihood and Other Modifications", ICLR, 2017 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)]
-[^6]: **PixelSnail**: "Cascaded Diffusion Models for High Fidelity Image Generation", PMLR, 2018 [[paper](http://proceedings.mlr.press/v80/chen18h/chen18h.pdf)][not available now]
+[^6]: **PixelSnail**: "Cascaded Diffusion Models for High Fidelity Image Generation", PMLR, 2018 [[paper](http://proceedings.mlr.press/v80/chen18h/chen18h.pdf)]
 [^7]: **AE**: "Autoencoders, Unsupervised Learning, and Deep Architectures", JMLR, 2012 [[paper](https://proceedings.mlr.press/v27/baldi12a/baldi12a.pdf)] 
 [^8]: **VAE**: "Auto-Encoding Variational Bayes", ArXiv, 2013 [[paper](https://arxiv.org/pdf/1312.6114.pdf)]
 [^9]: **Categorical-VAE**: "Categorical Reparameterization with Gumbel-Softmax", ICLR, 2017 [[paper](https://arxiv.org/pdf/1611.01144.pdf)]
