@@ -52,7 +52,7 @@ Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
 | Method              | Command                        | NLL  | Pretrained model                                             |
 | ------------------- | ------------------------------ | ---- | ------------------------------------------------------------ |
-| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
+| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[summary](docs/nade.md)] [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
 | MADE[^2]            | `python3 train.py -m MADE`     | 83.8 | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
 | PixelCNN[^3]        | `python3 train.py -m PixelCNN` | 81.7 | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
 | Gated PixelCNN[^4]  |                                |      |                                                              |
