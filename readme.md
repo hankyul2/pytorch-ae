@@ -52,7 +52,7 @@ Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
 | Method              | Command                        | NLL  | Pretrained model                                             |
 | ------------------- | ------------------------------ | ---- | ------------------------------------------------------------ |
-| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[summary](docs/nade.md)] [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
+| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
 | MADE[^2]            | `python3 train.py -m MADE`     | 83.8 | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
 | PixelCNN[^3]        | `python3 train.py -m PixelCNN` | 81.7 | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
 | Gated PixelCNN[^4]  |                                |      |                                                              |
@@ -96,7 +96,7 @@ Issues
 
 ### :maple_leaf:Reference
 
-[^1]: **NADE:** "Neural Autoregressive Distribution Estimation", JMLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] [[code](pae/model/nade.py)]
+[^1]: **NADE:** "Neural Autoregressive Distribution Estimation", JMLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] [[code](pae/model/nade.py)] [[summary](docs/nade.md)]
 [^2]: **MADE**: "Masked Autoencoder for Distribution Estimation", PMLR, 2015 [[paper](http://proceedings.mlr.press/v37/germain15.pdf)] [[code](pae/model/nade.py)]
 [^3]: **PixelCNN**: "pixel recurrent neural networks", PMLR, 2016 [[paper](http://proceedings.mlr.press/v48/oord16.pdf)] [[code](pae/model/pixel_cnn.py)]
 [^4]: **Gated PixelCNN**: "Conditional Image Generation with PixelCNN Decoders", NIPS, 2016 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)] [not available now]
