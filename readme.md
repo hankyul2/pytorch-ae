@@ -50,22 +50,22 @@ Most code are copy & pasted version from [pytorch-generative](https://github.com
 
 Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 
-| Method              | Command                        | NLL  | Pretrained model                                             |
-| ------------------- | ------------------------------ | ---- | ------------------------------------------------------------ |
-| NADE[^1]            | `python3 train.py -m NADE`     | 84.0 | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
-| MADE[^2]            | `python3 train.py -m MADE`     | 83.8 | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
-| PixelCNN[^3]        | `python3 train.py -m PixelCNN` | 81.7 | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
-| Gated PixelCNN[^4]  |                                |      |                                                              |
-| PixelCNN++[^5]      |                                |      |                                                              |
-| PixelSnail[^6]      |                                |      |                                                              |
-| AE[^7]              |                                |      |                                                              |
-| VAE[^8]             |                                |      |                                                              |
-| Categorical-VAE[^9] |                                |      |                                                              |
-| VQ-VAE[^10]         |                                |      |                                                              |
-| VQ-VAE-v2[^11]      |                                |      |                                                              |
-| dVAE[^12]           |                                |      |                                                              |
-| CDM[^13]            |                                |      |                                                              |
-|                     |                                |      |                                                              |
+| Method                   | Command                        | NLL  | Pretrained model                                             |
+| ------------------------ | ------------------------------ | ---- | ------------------------------------------------------------ |
+| [NADE](docs/nade.md)[^1] | `python3 train.py -m NADE`     | 84.0 | [[code](pae/model/nade.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/NADE_log.txt)] |
+| MADE[^2]                 | `python3 train.py -m MADE`     | 83.8 | [[code](pae/model/made.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/MADE_log.txt)] |
+| PixelCNN[^3]             | `python3 train.py -m PixelCNN` | 81.7 | [[code](pae/model/pixel_cnn.py)] [[weight](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_weight.pth)] [[log](https://github.com/hankyul2/pytorch-ae/releases/download/v0.0.1/PixelCNN_log.txt)] |
+| Gated PixelCNN[^4]       |                                |      |                                                              |
+| PixelCNN++[^5]           |                                |      |                                                              |
+| PixelSnail[^6]           |                                |      |                                                              |
+| AE[^7]                   |                                |      |                                                              |
+| VAE[^8]                  |                                |      |                                                              |
+| Categorical-VAE[^9]      |                                |      |                                                              |
+| VQ-VAE[^10]              |                                |      |                                                              |
+| VQ-VAE-v2[^11]           |                                |      |                                                              |
+| dVAE[^12]                |                                |      |                                                              |
+| CDM[^13]                 |                                |      |                                                              |
+|                          |                                |      |                                                              |
 
 Issues
 
@@ -96,17 +96,17 @@ Issues
 
 ### :maple_leaf:Reference
 
-[^1]: **NADE:** "Neural Autoregressive Distribution Estimation", JMLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] [[code](pae/model/nade.py)] [[summary](docs/nade.md)]
-[^2]: **MADE**: "Masked Autoencoder for Distribution Estimation", PMLR, 2015 [[paper](http://proceedings.mlr.press/v37/germain15.pdf)] [[code](pae/model/nade.py)]
-[^3]: **PixelCNN**: "pixel recurrent neural networks", PMLR, 2016 [[paper](http://proceedings.mlr.press/v48/oord16.pdf)] [[code](pae/model/pixel_cnn.py)]
-[^4]: **Gated PixelCNN**: "Conditional Image Generation with PixelCNN Decoders", NIPS, 2016 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)] [not available now]
-[^5]: **PixelCNN++**: "Improving the PixelCNN with Discretized Logistic Mixture Likelihood and Other Modifications", ICLR, 2017 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)] [not available now]
-[^6]: **PixelSnail**: "Cascaded Diffusion Models for High Fidelity Image Generation", PMLR, 2018 [[paper](http://proceedings.mlr.press/v80/chen18h/chen18h.pdf)] [not available now]
-[^7]: **AE**: "Autoencoders, Unsupervised Learning, and Deep Architectures", JMLR, 2012 [[paper](https://proceedings.mlr.press/v27/baldi12a/baldi12a.pdf)] [not available now]
-[^8]: **VAE**: "Auto-Encoding Variational Bayes", ArXiv, 2013 [[paper](https://arxiv.org/pdf/1312.6114.pdf)] [not available now]
-[^9]: **Categorical-VAE**: "Categorical Reparameterization with Gumbel-Softmax", ICLR, 2017 [[paper](https://arxiv.org/pdf/1611.01144.pdf)] [not available now]
-[^10]: **VQ-VAE**: "Neural Discrete Representation Learning", NIPS, 2017 [[paper](https://proceedings.neurips.cc/paper/2017/file/7a98af17e63a0ac09ce2e96d03992fbc-Paper.pdf)] [not available now]
-[^11]: **VQ-VAE-v2**: "Generating Diverse High-Fidelity Images with VQ-VAE-2", NIPS, 2019 [[paper](https://proceedings.neurips.cc/paper/2019/file/5f8e2fa1718d1bbcadf1cd9c7a54fb8c-Paper.pdf)] [not available now]
-[^12]: **dVAE**: "Zero-Shot Text-to-Image Generation", PMLR, 2021 [[paper](http://proceedings.mlr.press/v139/ramesh21a/ramesh21a.pdf)] [not available now]
-[^13]: **CDM**: "Cascaded Diffusion Models for High Fidelity Image Generation", JMLR, 2022 [[paper](https://www.jmlr.org/papers/volume23/21-0635/21-0635.pdf)] [not available now]
+[^1]: **NADE:** "Neural Autoregressive Distribution Estimation", JMLR, 2016 [[paper](https://www.jmlr.org/papers/volume17/16-272/16-272.pdf)] 
+[^2]: **MADE**: "Masked Autoencoder for Distribution Estimation", PMLR, 2015 [[paper](http://proceedings.mlr.press/v37/germain15.pdf)]
+[^3]: **PixelCNN**: "pixel recurrent neural networks", PMLR, 2016 [[paper](http://proceedings.mlr.press/v48/oord16.pdf)] 
+[^4]: **Gated PixelCNN**: "Conditional Image Generation with PixelCNN Decoders", NIPS, 2016 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)]
+[^5]: **PixelCNN++**: "Improving the PixelCNN with Discretized Logistic Mixture Likelihood and Other Modifications", ICLR, 2017 [[paper](https://proceedings.neurips.cc/paper/2016/file/b1301141feffabac455e1f90a7de2054-Paper.pdf)]
+[^6]: **PixelSnail**: "Cascaded Diffusion Models for High Fidelity Image Generation", PMLR, 2018 [[paper](http://proceedings.mlr.press/v80/chen18h/chen18h.pdf)][not available now]
+[^7]: **AE**: "Autoencoders, Unsupervised Learning, and Deep Architectures", JMLR, 2012 [[paper](https://proceedings.mlr.press/v27/baldi12a/baldi12a.pdf)] 
+[^8]: **VAE**: "Auto-Encoding Variational Bayes", ArXiv, 2013 [[paper](https://arxiv.org/pdf/1312.6114.pdf)]
+[^9]: **Categorical-VAE**: "Categorical Reparameterization with Gumbel-Softmax", ICLR, 2017 [[paper](https://arxiv.org/pdf/1611.01144.pdf)]
+[^10]: **VQ-VAE**: "Neural Discrete Representation Learning", NIPS, 2017 [[paper](https://proceedings.neurips.cc/paper/2017/file/7a98af17e63a0ac09ce2e96d03992fbc-Paper.pdf)]
+[^11]: **VQ-VAE-v2**: "Generating Diverse High-Fidelity Images with VQ-VAE-2", NIPS, 2019 [[paper](https://proceedings.neurips.cc/paper/2019/file/5f8e2fa1718d1bbcadf1cd9c7a54fb8c-Paper.pdf)] 
+[^12]: **dVAE**: "Zero-Shot Text-to-Image Generation", PMLR, 2021 [[paper](http://proceedings.mlr.press/v139/ramesh21a/ramesh21a.pdf)] 
+[^13]: **CDM**: "Cascaded Diffusion Models for High Fidelity Image Generation", JMLR, 2022 [[paper](https://www.jmlr.org/papers/volume23/21-0635/21-0635.pdf)]
 
