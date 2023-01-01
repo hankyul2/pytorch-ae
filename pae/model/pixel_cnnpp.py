@@ -107,12 +107,13 @@ class DoubleResConvBlock(nn.Module):
 
 class PixelCNNPP(nn.Module):
     n_stage = 3
-    def __init__(self, ch=3, n_layer_per_stage=5, hidden=160, num_mixture=10, dropout=0.5):
+    def __init__(self, ch=3, category=1, n_layer_per_stage=5, hidden=160, num_mixture=10, dropout=0.5):
         super().__init__()
         # 1. stem layer
         self.v_stem = nn.Sequential(nn.ZeroPad2d((3, 3, 4, 0)), WN(nn.Conv2d(ch, hidden, (4, 7))))
         self.h_stem = nn.Sequential(nn.ZeroPad2d((4, 0, 3, 0)), WN(nn.Conv2d(ch, hidden, (4, 4))))
         self.n_layer = self.n_stage * n_layer_per_stage
+        self.category = category
 
         # 2. body layer
         down_layers = list()
@@ -130,11 +131,11 @@ class PixelCNNPP(nn.Module):
         self.up_layers = nn.ModuleList(up_layers)
 
         # 3. head layer
-        mixture_component = 1 + ch * (2 if ch == 1 else 3)
-        self.classifier = nn.Sequential(nn.ELU(), nn.Conv2d(hidden, mixture_component * num_mixture, 1))
-
-        # 4. (legacy) cross entropy optimization
-        # self.classifier = nn.Conv2d(hidden, 1, 1)
+        if self.category > 1:
+            mixture_component = 1 + ch * (2 if ch == 1 else 3)
+            self.classifier = nn.Sequential(nn.ELU(), nn.Conv2d(hidden, mixture_component * num_mixture, 1))
+        else:
+            self.classifier = nn.Conv2d(hidden, 1, 1)
 
     def forward(self, x):
         # 1. stem
@@ -150,22 +151,22 @@ class PixelCNNPP(nn.Module):
             x_v, x_h = layer(x_v, x_h, *skip_connection.pop())
 
         # 4. classifier
-        out = self.classifier(x_h)
-        sample = sample_from_mixture_logit(out) * 0.5 + 0.5
+        if self.category > 1:
+            out = self.classifier(x_h)
+            sample = sample_from_mixture_logit(out) * 0.5 + 0.5
 
-        return out, sample
+            return out, sample
+        else:
+            l = self.classifier(x_h)
+            b, c, h, w = l.shape
+            l = l.reshape(b, 1, 1, h, w)
+            out = l.permute(0, 2, 1, 3, 4).squeeze(2) # remove category for binary nnl loss
+            p = l.permute(0, 1, 3, 4, 2)
 
-        # 5. (legacy) cross entropy optimization
-        # l = self.classifier(x_h)
-        # b, c, h, w = l.shape
-        # l = l.reshape(b, 1, 1, h, w)
-        # out = l.permute(0, 2, 1, 3, 4).squeeze(2) # remove category for binary nnl loss
-        # p = l.permute(0, 1, 3, 4, 2)
-        #
-        # p = torch.sigmoid(p)
-        # sample = Bernoulli(probs=p).sample().squeeze(-1)
+            p = torch.sigmoid(p)
+            sample = Bernoulli(probs=p).sample().squeeze(-1)
 
-        # return out, sample
+            return out, sample
 
 
     @torch.no_grad()
