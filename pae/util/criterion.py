@@ -95,6 +95,7 @@ class MultiLogitLoss(nn.Module):
         log_cdf_minus = -F.softplus(in_minus)
 
         # 4. compute loss
+        # IMPORTANT: you should add clamp before torch.log() (I don't know why...)
         multi_logit_loss = torch.where(
             y < -0.999, log_cdf_plus, torch.where(
             y > 0.999, log_cdf_minus, torch.where(
