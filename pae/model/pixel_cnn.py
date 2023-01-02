@@ -106,8 +106,9 @@ class PixelCNN(nn.Module):
 
         for h in range(H):
             for w in range(W):
-                _, sample = self.forward(x)
-                x[:, :, h, w] = (sample[:, :, h, w] - mean) / std
+                for c in range(C):
+                    _, sample = self.forward(x)
+                    x[:, c, h, w] = (sample[:, c, h, w] - mean[c]) / std[c]
 
         return x * std.reshape(1, C, 1, 1) + mean.reshape(1, C, 1, 1)
 

@@ -63,21 +63,23 @@ class GatedConvBlock(nn.Module):
     def __init__(self, c, in_ch, out_ch, k=3, mask_center=False):
         super().__init__()
         self.mask_center = int(mask_center)
-        self.v = MaskConv2d(in_ch, out_ch * 2, kernel_size=(k//2+1, k), padding=(k//2, k//2), channel_split=c)
+        self.ver = MaskConv2d(in_ch, out_ch * 2, kernel_size=(k // 2 + 1, k),
+                              padding=(k // 2 + self.mask_center, k // 2), channel_split=c)
+        self.hor = MaskConv2d(in_ch, out_ch * 2, kernel_size=(k // 2 + 1, k // 2 + 1),
+                              padding=(k // 2, k // 2 + self.mask_center), channel_split=c)
         self.l = MaskConv2d(out_ch * 2, out_ch * 2, kernel_size=1, padding=0, channel_split=c)
-        self.h = MaskConv2d(in_ch, out_ch * 2, kernel_size=(1, k//2+1),
-                            padding=(0, k//2 + self.mask_center), channel_split=c)
         self.out = MaskConv2d(out_ch, out_ch, kernel_size=1, padding=0, channel_split=c)
         self.act = GatedActivation(channel_split=c)
 
     def forward(self, x_v, x_h):
         B, C, H, W = x_v.shape
-        v = self.v(x_v)[:, :, :H, :]
-        h = self.h(x_h)[:, :, :, :W] + self.l(F.pad(v, (0, 0, 1, 0))[:, :, :H, :])
+        v = self.ver(x_v)[:, :, :H, :]
+        h = self.hor(x_h)[:, :, :H, :W] + self.l(v)
         v = self.act(v)
         h = self.out(self.act(h))
 
         if not self.mask_center:
+            v = v + x_v
             h = h + x_h
 
         return v, h
@@ -129,8 +131,9 @@ class GatedPixelCNN(nn.Module):
 
         for h in range(H):
             for w in range(W):
-                _, sample = self.forward(x)
-                x[:, :, h, w] = (sample[:, :, h, w] - mean) / std
+                for c in range(C):
+                    _, sample = self.forward(x)
+                    x[:, c, h, w] = (sample[:, c, h, w] - mean[c]) / std[c]
 
         return x * std.reshape(1, C, 1, 1) + mean.reshape(1, C, 1, 1)
 

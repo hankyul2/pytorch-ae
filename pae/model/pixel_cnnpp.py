@@ -177,7 +177,10 @@ class PixelCNNPP(nn.Module):
         for h in range(H):
             for w in range(W):
                 _, sample = self.forward(x)
-                x[:, :, h, w] = sample[:, :, h, w]
+                if self.category > 1:
+                    x[:, :, h, w] = (sample[:, :, h, w] - 0.5) / 0.5
+                else:
+                    x[:, :, h, w] = sample[:, :, h, w]
 
         return x
 
@@ -189,8 +192,9 @@ def sample_from_mixture_logit(x):
 
     # 1. choose mixture
     logit_prob = x[:, 0]
-    noise = torch.zeros_like(logit_prob).uniform_(1e-5, 1 - 1e-5).log().log()
-    mixture = (logit_prob - noise).argmax(dim=1)
+    noise = torch.zeros_like(logit_prob).uniform_(1e-5, 1 - 1e-5)
+    noise = -torch.log(-torch.log(noise))
+    mixture = (logit_prob + noise).argmax(dim=1)
     mixture = mixture[:, None, None, :, :]
 
     # 2. compute pixel value
@@ -222,6 +226,7 @@ def sample_from_mixture_logit(x):
         sample = torch.cat([m0, m1, m2], dim=1)
 
     return sample
+
 
 if __name__ == '__main__':
     x = torch.rand([2, 3, 28, 28])

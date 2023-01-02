@@ -28,7 +28,8 @@ def get_arg_parser():
     parser.add_argument('--channels-last', action='store_true', help='change memory format to channels last')
 
     # 2. augmentation & dataset & dataloader
-    parser.add_argument('-d', '--dataset-type', type=str, default='MNIST', choices=['MNIST', 'CIFAR10'], help='dataset')
+    parser.add_argument('-d', '--dataset-type', type=str, default='MNIST',
+                        choices=['MNIST', 'CIFAR10', 'ImageNet64',], help='dataset')
     parser.add_argument('--train-size', type=int, default=(224, 224), nargs='+', help='train image size')
     parser.add_argument('--train-resize-mode', type=str, default='RandomResizedCrop', help='train image resize mode')
     parser.add_argument('--random-crop-pad', type=int, default=0, help='pad size for ResizeRandomCrop')
@@ -58,7 +59,7 @@ def get_arg_parser():
     parser.add_argument('-m', '--model-name', type=str, default='NADE', help='the name of model')
 
     # 3. optimizer & learning rate
-    parser.add_argument('--batch-size', type=int, default=512, help='the number of batch per step')
+    parser.add_argument('-b', '--batch-size', type=int, default=512, help='the number of batch per step')
     parser.add_argument('--epoch', type=int, default=50, help='the number of training epoch')
     parser.add_argument('--lr', type=float, default=1e-3, help='learning rate')
     parser.add_argument('--weight_decay', type=float, default=1e-4, help='weight decay')
@@ -101,7 +102,11 @@ def validate(dataloader, model, critic, args, epoch):
 
         with torch.cuda.amp.autocast(args.amp):
             logit, x_recon = model(x_in)
-            loss, nll_loss = critic(logit, x_out)
+
+            if args.model_name in ['PixelCNN++']:
+                loss, nll_loss = critic(logit, x_in)
+            else:
+                loss, nll_loss = critic(logit, x_out)
 
         if args.distributed:
             loss = reduce_mean(nll_loss, args.world_size)
@@ -134,7 +139,11 @@ def train(dataloader, model, critic, optimizer, scheduler, scaler, args, epoch):
 
         with torch.cuda.amp.autocast(args.amp):
             logit, x_recon = model(x_in)
-            loss, nll_loss = critic(logit, x_out)
+
+            if args.model_name in ['PixelCNN++'] and args.num_classes > 1:
+                loss, nll_loss = critic(logit, x_in)
+            else:
+                loss, nll_loss = critic(logit, x_out)
 
         if args.amp:
             scaler(loss, optimizer, model.parameters(), scheduler, args.grad_norm, batch_idx % args.grad_accum == 0)
@@ -198,7 +207,7 @@ def run(args):
         sample(model, args, epoch)
 
         args.log(f"EPOCH({epoch:>{num_digit}}/{args.epoch}): Train Loss: {train_loss:.04f} Val Loss: {val_loss:.04f}")
-        if args.use_wandb:
+        if args.use_wandb and args.is_rank_zero:
             args.log({
                 'train_loss':train_loss, 'val_loss':val_loss,
                 'val_img': wandb.Image(os.path.join(args.log_dir, f'val_{epoch}.jpg')),
