@@ -1,7 +1,7 @@
 import torch
 from torch.nn.parallel import DistributedDataParallel
 
-from pae.model import NADE, MADE, PixelCNN, GatedPixelCNN, PixelCNNPP, PixelSnail
+from pae.model import NADE, MADE, PixelCNN, GatedPixelCNN, PixelCNNPP, PixelSnail, PixelSnailPP
 
 
 def get_model(args):
@@ -17,6 +17,8 @@ def get_model(args):
         model = PixelCNNPP(ch=args.num_channels, category=args.num_classes).to(args.device)
     elif args.model_name == 'PixelSnail':
         model = PixelSnail(ch=args.num_channels, category=args.num_classes).to(args.device)
+    elif args.model_name == 'PixelSnail++':
+        model = PixelSnailPP(ch=args.num_channels, category=args.num_classes).to(args.device)
     else:
         AssertionError(f"{args.model_name} is not supported yet!")
 
