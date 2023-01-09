@@ -60,7 +60,7 @@ Negative Log Likelihood (NLL) loss on Binarized MNIST dataset.
 | PixelSnail[^6]           | `python3 train.py -m PixelSnail -b 64 --lr 1.25e-4`   |      |                                                              |
 | PixelSnail++[^5][^6]     | `python3 train.py -m PixelSnail++ -b 64 --lr 1.25e-4` |      |                                                              |
 | AE[^7]                   |                                                       |      |                                                              |
-| VAE[^8]                  |                                                       |      |                                                              |
+| [VAE](docs/vae.md)[^8]   |                                                       |      |                                                              |
 | Categorical-VAE[^9]      |                                                       |      |                                                              |
 | VQ-VAE[^10]              |                                                       |      |                                                              |
 | VQ-VAE-v2[^11]           |                                                       |      |                                                              |
