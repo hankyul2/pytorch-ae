@@ -101,10 +101,17 @@ def validate(dataloader, model, critic, args, epoch):
             x_in = x_in.to(memory_format=torch.channels_last)
 
         with torch.cuda.amp.autocast(args.amp):
-            logit, x_recon = model(x_in)
+            if args.model_name in ['VAE']:
+                logit, x_recon, kl_loss = model(x_in)
+            else:
+                logit, x_recon = model(x_in)
 
             if args.model_name in ['PixelCNN++']:
                 loss, nll_loss = critic(logit, x_in)
+            elif args.model_name in ['VAE']:
+                loss, nll_loss = critic(logit, x_out)
+                loss = loss + kl_loss
+                # nll_loss = loss + kl_loss
             else:
                 loss, nll_loss = critic(logit, x_out)
 
@@ -138,10 +145,17 @@ def train(dataloader, model, critic, optimizer, scheduler, scaler, args, epoch):
             x_in = x_in.to(memory_format=torch.channels_last)
 
         with torch.cuda.amp.autocast(args.amp):
-            logit, x_recon = model(x_in)
+            if args.model_name in ['VAE']:
+                logit, x_recon, kl_loss = model(x_in)
+            else:
+                logit, x_recon = model(x_in)
 
             if args.model_name in ['PixelCNN++'] and args.num_classes > 1:
                 loss, nll_loss = critic(logit, x_in)
+            elif args.model_name in ['VAE']:
+                loss, nll_loss = critic(logit, x_out)
+                loss = loss + kl_loss
+                # nll_loss = loss + kl_loss
             else:
                 loss, nll_loss = critic(logit, x_out)
 
