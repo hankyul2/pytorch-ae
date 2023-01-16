@@ -101,24 +101,24 @@ def validate(dataloader, model, critic, args, epoch):
             x_in = x_in.to(memory_format=torch.channels_last)
 
         with torch.cuda.amp.autocast(args.amp):
-            if args.model_name in ['VAE']:
+            if args.model_name in ['VAE', 'Linear_VAE', 'LVAE']:
                 logit, x_recon, kl_loss = model(x_in)
             else:
                 logit, x_recon = model(x_in)
 
             if args.model_name in ['PixelCNN++']:
                 loss, nll_loss = critic(logit, x_in)
-            elif args.model_name in ['VAE']:
+            elif args.model_name in ['VAE', 'Linear_VAE', 'LVAE']:
                 loss, nll_loss = critic(logit, x_out)
                 loss = loss + kl_loss
-                # nll_loss = loss + kl_loss
+                nll_loss = nll_loss + kl_loss
             else:
                 loss, nll_loss = critic(logit, x_out)
 
         if args.distributed:
-            loss = reduce_mean(nll_loss, args.world_size)
+            nll_loss = reduce_mean(nll_loss, args.world_size)
 
-        loss_m.update(loss, len(x_in))
+        loss_m.update(nll_loss, len(x_in))
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
@@ -145,17 +145,17 @@ def train(dataloader, model, critic, optimizer, scheduler, scaler, args, epoch):
             x_in = x_in.to(memory_format=torch.channels_last)
 
         with torch.cuda.amp.autocast(args.amp):
-            if args.model_name in ['VAE']:
-                logit, x_recon, kl_loss = model(x_in)
+            if args.model_name in ['VAE', 'Linear_VAE', 'LVAE']:
+                    logit, x_recon, kl_loss = model(x_in)
             else:
                 logit, x_recon = model(x_in)
 
             if args.model_name in ['PixelCNN++'] and args.num_classes > 1:
                 loss, nll_loss = critic(logit, x_in)
-            elif args.model_name in ['VAE']:
+            elif args.model_name in ['VAE', 'Linear_VAE', 'LVAE']:
                 loss, nll_loss = critic(logit, x_out)
                 loss = loss + kl_loss
-                # nll_loss = loss + kl_loss
+                nll_loss = nll_loss + kl_loss
             else:
                 loss, nll_loss = critic(logit, x_out)
 
@@ -172,9 +172,9 @@ def train(dataloader, model, critic, optimizer, scheduler, scaler, args, epoch):
                     scheduler.step()
 
         if args.distributed:
-            loss = reduce_mean(nll_loss, args.world_size)
+            nll_loss = reduce_mean(nll_loss, args.world_size)
 
-        loss_m.update(loss, len(x_in))
+        loss_m.update(nll_loss, len(x_in))
 
         if batch_idx and args.print_freq and batch_idx % args.print_freq == 0:
             num_digits = len(str(total_iter))
